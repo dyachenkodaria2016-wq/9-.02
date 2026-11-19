@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Access Lab — інтерактивний симулятор</title>
+<style>
+:root{--red:#a4373a;--red2:#7d2529;--ink:#252525;--muted:#6b7280;--line:#dedede;--paper:#fff;--bg:#f3f4f6;--soft:#f8eeee;--gold:#d7a64b}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font:14px/1.45 "Segoe UI",Arial,sans-serif;color:var(--ink)}
+header{background:linear-gradient(110deg,#7d2529,#b74447);color:white;padding:18px 24px;display:flex;align-items:center;justify-content:space-between;gap:15px;flex-wrap:wrap}
+.brand{font-size:22px;font-weight:750;letter-spacing:.2px}.brand small{display:block;font-size:12px;font-weight:400;opacity:.85}
+header .tag{border:1px solid #ffffff70;border-radius:20px;padding:6px 12px}
+main{max-width:1400px;margin:auto;padding:18px;display:grid;grid-template-columns:230px 1fr;gap:16px}
+nav,.panel{background:white;border:1px solid var(--line);border-radius:10px;box-shadow:0 2px 8px #00000008}
+nav{padding:12px;height:max-content;position:sticky;top:12px}nav button{display:block;width:100%;text-align:left;margin:3px 0;background:transparent;color:#333;border:0;padding:11px;border-radius:7px;cursor:pointer}nav button.active,nav button:hover{background:var(--soft);color:var(--red);font-weight:650}
+.content{min-width:0}.panel{padding:18px;margin-bottom:14px}.panel h2{margin:0 0 12px;font-size:19px}.panel h3{margin:16px 0 8px;font-size:15px}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 0}
+button,.btn{border:1px solid #c9cdd2;background:white;border-radius:6px;padding:8px 12px;cursor:pointer;color:#292929;font:inherit}
+button.primary{background:var(--red);border-color:var(--red);color:white}button.primary:hover{background:var(--red2)}button.danger{color:#a1262b;border-color:#e7babc}
+button:disabled{opacity:.45;cursor:not-allowed}
+input,select,textarea{border:1px solid #cbd0d6;border-radius:6px;padding:8px 9px;font:inherit;background:white;max-width:100%}
+input:focus,select:focus,textarea:focus{outline:2px solid #a4373a35;border-color:var(--red)}
+label{display:flex;flex-direction:column;gap:4px;color:#4b5563;font-size:12px;font-weight:600}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}
+table{width:100%;border-collapse:collapse;min-width:620px}th,td{border:1px solid #dfe2e6;padding:8px;text-align:left}th{background:#f4e7e7;color:#70272a;font-weight:650}tbody tr:nth-child(even){background:#fafafa}
+.tablewrap{overflow:auto;border:1px solid var(--line);border-radius:7px}
+.muted{color:var(--muted)}.notice{padding:10px 12px;background:#fff8e8;border-left:4px solid var(--gold);border-radius:5px;margin:10px 0}.success{background:#edf8ef;border-left-color:#38934b}.error{background:#fff0f0;border-left-color:#c33}
+.hidden{display:none!important}.pill{display:inline-block;padding:3px 8px;border-radius:20px;background:#f1f1f1;font-size:12px}.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}.stat{background:#faf6f6;padding:12px;border-radius:8px}.stat b{display:block;font-size:23px;color:var(--red)}
+.queryrow{display:grid;grid-template-columns:1.1fr .8fr 1.3fr auto;gap:8px;align-items:end;margin:8px 0}
+footer{text-align:center;color:#777;padding:15px}
+@media(max-width:800px){main{grid-template-columns:1fr}nav{position:static;display:grid;grid-template-columns:repeat(2,1fr)}.queryrow{grid-template-columns:1fr 1fr}.queryrow input{grid-column:span 2}}
+</style>
+</head>
+<body>
+<header><div class="brand">Access Lab <small>Навчальний симулятор баз даних · 9 клас</small></div><span class="tag">Імітація інтерфейсу Microsoft Access</span></header>
+<main>
+<nav id="nav">
+<button class="active" data-view="home">⌂ Огляд</button><button data-view="tables">▦ Таблиці</button><button data-view="query">⌕ Конструктор запитів</button><button data-view="data">✎ Редагування даних</button><button data-view="files">⇅ Імпорт та експорт</button><button data-view="guide">ⓘ Інструкція</button>
+</nav>
+<section class="content">
+<section id="home" class="view panel"><h2>Ласкаво просимо до Access Lab</h2><p>Тренуйтеся створювати таблиці, відбирати записи за будь-якими полями, сортувати дані та обмінюватися файлами з Microsoft Access.</p><div class="stats"><div class="stat"><b id="tableCount">0</b>Таблиць</div><div class="stat"><b id="rowCount">0</b>Записів</div><div class="stat"><b id="queryCount">0</b>Умов у запиті</div></div><div class="notice">Це навчальний браузерний симулятор, а не повна копія Microsoft Access. Дані зберігаються у браузері лише протягом поточної сесії, якщо не експортувати резервну копію.</div><h3>Швидкий старт</h3><ol><li>Перейдіть у «Таблиці» та оберіть таблицю.</li><li>У «Конструкторі запитів» виберіть будь-яке поле, оператор і значення.</li><li>Натисніть «Виконати запит» — результат з'явиться нижче.</li><li>У «Імпорт та експорт» збережіть JSON-резервну копію або CSV для Access.</li></ol></section>
+<section id="tables" class="view panel hidden"><h2>Таблиці бази даних</h2><div class="toolbar"><select id="tableSelect"></select><button id="resetDemo">Відновити приклад</button><button id="newTable">+ Нова таблиця</button></div><div id="tableInfo" class="muted"></div><div class="tablewrap"><table id="tableGrid"></table></div></section>
+<section id="query" class="view panel hidden"><h2>Конструктор запитів</h2><p class="muted">Створюйте запити за одним або кількома полями. Результат формується з реальних записів вибраної таблиці; вихідні дані не змінюються.</p><div class="toolbar"><label>Таблиця<select id="queryTable"></select></label><label>Об'єднання умов<select id="joinMode"><option value="AND">Усі умови (AND)</option><option value="OR">Будь-яка умова (OR)</option></select></label><button id="addCondition">+ Додати умову</button><button class="primary" id="runQuery">Виконати запит</button><button id="clearQuery">Очистити</button></div><div id="conditions"></div><div id="queryMessage" class="muted" role="status" aria-live="polite"></div><div class="tablewrap"><table id="queryResults"></table></div></section>
+<section id="data" class="view panel hidden"><h2>Додавання та редагування записів</h2><div class="toolbar"><label>Таблиця<select id="editTable"></select></label></div><div id="recordForm" class="grid"></div><div class="toolbar"><button class="primary" id="addRecord">Додати запис</button><button id="clearForm">Очистити форму</button></div><div class="tablewrap"><table id="editGrid"></table></div></section>
+<section id="files" class="view panel hidden"><h2>Імпорт та експорт</h2><div class="notice"><b>Важливо про .accdb:</b> цей статичний сайт не створює справжній файл Microsoft Access (.accdb). Перейменування JSON/CSV на .accdb не працює й спричиняє помилку «file is not a database». Для Access підготовлено CSV-експорт таблиць і JSON-резервну копію.</div><h3>Експорт</h3><div class="toolbar"><button class="primary" id="exportJson">Завантажити резервну копію JSON</button><button id="exportCsv">Експортувати поточну таблицю в CSV</button><button id="exportAllCsv">Експортувати всі таблиці (CSV)</button></div><h3>Імпорт</h3><div class="grid"><label>Завантажити JSON резервну копію<input id="jsonInput" type="file" accept=".json,application/json"></label><label>Завантажити CSV у вибрану таблицю<input id="csvInput" type="file" accept=".csv,text/csv"></label></div><div class="toolbar"><label>Таблиця для CSV-імпорту<select id="importTable"></select></label><label><input type="checkbox" id="replaceRows"> Замінити записи таблиці (інакше додати)</label></div><div id="fileMessage" class="muted"></div><h3>Передавання до Microsoft Access</h3><ol><li>Натисніть «Експортувати всі таблиці (CSV)» — буде завантажено окремий CSV для кожної таблиці.</li><li>У Microsoft Access створіть порожню базу даних або відкрийте наявну.</li><li>Оберіть «Зовнішні дані» → «Створити джерело даних» → «З файлу» → «Текстовий файл» (назви пунктів можуть відрізнятися залежно від версії).</li><li>Виберіть CSV, імпортуйте дані в нову таблицю та позначте, що перший рядок містить імена полів.</li><li>Для кожної таблиці повторіть імпорт. За потреби в Access задайте первинний ключ і зв'язки вручну.</li><li>Збережіть базу в Access як .accdb — цей файл уже створить сама програма Microsoft Access.</li></ol><p class="muted">CSV переносить значення полів, але не переносить автоматично типи, ключі, зв'язки, форми, запити та звіти. JSON зберігає структуру навчального симулятора для повторного імпорту саме сюди.</p></section>
+<section id="guide" class="view panel hidden"><h2>Інструкція користувача</h2><h3>1. Створення запиту</h3><ol><li>Відкрийте «Конструктор запитів».</li><li>Оберіть таблицю. Список полів завантажується з її фактичної структури.</li><li>Натисніть «Додати умову», виберіть поле, оператор і значення.</li><li>Для тексту використовуйте «містить», «дорівнює», «починається з»; для чисел — порівняння; для дат — дорівнює/раніше/пізніше.</li><li>Виберіть AND, щоб виконалися всі умови, або OR, щоб виконалася хоча б одна.</li><li>Натисніть «Виконати запит». Якщо результат порожній, перевірте значення та тип поля.</li></ol><h3>2. Редагування даних</h3><p>У розділі «Редагування даних» можна додати новий запис. Для навчального прикладу доступні таблиці «Учні» та «Оцінки».</p><h3>3. Резервна копія</h3><p>JSON зберігає всі таблиці, поля та записи й може бути імпортований назад у симулятор. Зберігайте резервну копію перед оновленням сторінки.</p><h3>4. Обмін із Microsoft Access</h3><p>Для обміну використовуйте CSV. Імпортуйте кожну таблицю в Access, перевірте типи полів, налаштуйте ключі та зв'язки й збережіть результат як .accdb безпосередньо в Access.</p><div class="notice">Не завантажуйте CSV або JSON у Access, перейменувавши їх на .accdb. Це різні формати файлів.</div></section>
+</section></main><footer>Access Lab · Навчальний симулятор · Працює локально у браузері та на GitHub Pages</footer>
+<script>
+const demo={
+"Учні":{fields:[{name:"ID",type:"number"},{name:"Прізвище",type:"text"},{name:"Ім'я",type:"text"},{name:"Клас",type:"text"},{name:"Дата народження",type:"date"}],rows:[
+{ID:1,"Прізвище":"Шевченко","Ім'я":"Олена","Клас":"9-А","Дата народження":"2010-03-12"},
+{ID:2,"Прізвище":"Коваленко","Ім'я":"Максим","Клас":"9-Б","Дата народження":"2010-07-24"},
+{ID:3,"Прізвище":"Бондар","Ім'я":"Ірина","Клас":"9-А","Дата народження":"2010-11-05"},
+{ID:4,"Прізвище":"Мельник","Ім'я":"Андрій","Клас":"9-В","Дата народження":"2009-12-19"},
+{ID:5,"Прізвище":"Ткаченко","Ім'я":"Софія","Клас":"9-Б","Дата народження":"2010-01-30"}]},
+"Оцінки":{fields:[{name:"ID",type:"number"},{name:"УченьID",type:"number"},{name:"Предмет",type:"text"},{name:"Оцінка",type:"number"},{name:"Дата",type:"date"}],rows:[
+{ID:1,УченьID:1,"Предмет":"Інформатика","Оцінка":11,"Дата":"2026-09-10"},
+{ID:2,УченьID:2,"Предмет":"Математика","Оцінка":8,"Дата":"2026-09-11"},
+{ID:3,УченьID:3,"Предмет":"Інформатика","Оцінка":12,"Дата":"2026-09-12"},
+{ID:4,УченьID:4,"Предмет":"Математика","Оцінка":10,"Дата":"2026-09-13"},
+{ID:5,УченьID:5,"Предмет":"Інформатика","Оцінка":9,"Дата":"2026-09-14"}]}};
+let db=structuredClone(demo),conditions=[],lastResult=[];
+const $=id=>document.getElementById(id);
+function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function currentTable(){return $("tableSelect").value||Object.keys(db)[0]}
+function fillSelects(){["tableSelect","queryTable","editTable","importTable"].forEach(id=>{let el=$(id),v=el.value;el.innerHTML=Object.keys(db).map(n=>`<option>${esc(n)}</option>`).join("");if(db[v])el.value=v;});}
+function render(){fillSelects();$("tableCount").textContent=Object.keys(db).length;$("rowCount").textContent=Object.values(db).reduce((a,t)=>a+t.rows.length,0);$("queryCount").textContent=conditions.length;renderTable();renderEdit();}
+function renderTable(){let t=db[currentTable()];$("tableInfo").textContent=`${currentTable()}: ${t.fields.length} полів · ${t.rows.length} записів`;$("tableGrid").innerHTML=thead(t.fields)+tbody(t.fields,t.rows);}
+function thead(fields){return `<thead><tr>${fields.map(f=>`<th>${esc(f.name)} <span class="muted">(${f.type})</span></th>`).join("")}</tr></thead>`}
+function tbody(fields,rows){return `<tbody>${rows.map(r=>`<tr>${fields.map(f=>`<td>${esc(r[f.name])}</td>`).join("")}</tr>`).join("")||`<tr><td colspan="${fields.length}" class="muted">Немає записів</td></tr>`}</tbody>`}
+function renderEdit(){let t=db[$("editTable").value||Object.keys(db)[0]];$("recordForm").innerHTML=t.fields.filter(f=>f.name!=="ID").map(f=>`<label>${esc(f.name)}<input data-field="${esc(f.name)}" type="${f.type==="number"?"number":f.type==="date"?"date":"text"}"></label>`).join("");$("editGrid").innerHTML=thead(t.fields)+tbody(t.fields,t.rows);}
+function nav(view){document.querySelectorAll(".view").forEach(x=>x.classList.toggle("hidden",x.id!==view));document.querySelectorAll("nav button").forEach(x=>x.classList.toggle("active",x.dataset.view===view));if(view==="query")renderConditions();}
+document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>nav(b.dataset.view));
+$("tableSelect").onchange=renderTable;$("editTable").onchange=renderEdit;$("queryTable").onchange=()=>{conditions=[];renderConditions();$("queryResults").innerHTML="";$("queryMessage").textContent="Вибрано іншу таблицю. Додайте умови нового запиту.";};
+function renderConditions(){
+ const t=db[$("queryTable").value];
+ if(!t){$("conditions").innerHTML="";return;}
+ $("conditions").innerHTML=conditions.map((c,i)=>{
+  const field=t.fields.find(f=>f.name===c.field)||t.fields[0];
+  const numeric=field.type==="number",date=field.type==="date";
+  const available=numeric||date
+   ? [{v:"eq",t:"дорівнює"},{v:"neq",t:"не дорівнює"},{v:"gt",t:"більше"},{v:"gte",t:"не менше"},{v:"lt",t:"менше"},{v:"lte",t:"не більше"},{v:"empty",t:"порожнє значення"},{v:"notEmpty",t:"не порожнє"}]
+   : [{v:"eq",t:"дорівнює"},{v:"neq",t:"не дорівнює"},{v:"contains",t:"містить"},{v:"starts",t:"починається з"},{v:"ends",t:"закінчується на"},{v:"empty",t:"порожнє значення"},{v:"notEmpty",t:"не порожнє"}];
+  if(!available.some(o=>o.v===c.op)) c.op="eq";
+  const inputType=numeric?"number":date?"date":"text";
+  return `<div class="queryrow">
+   <label>Поле<select data-i="${i}" data-k="field">${t.fields.map(f=>`<option value="${esc(f.name)}" ${f.name===c.field?"selected":""}>${esc(f.name)}</option>`).join("")}</select></label>
+   <label>Оператор<select data-i="${i}" data-k="op">${available.map(o=>`<option value="${o.v}" ${o.v===c.op?"selected":""}>${o.t}</option>`).join("")}</select></label>
+   <label>Значення<input data-i="${i}" data-k="value" type="${inputType}" value="${esc(c.value)}" ${c.op==="empty"||c.op==="notEmpty"?"disabled":""} placeholder="${c.op==="empty"||c.op==="notEmpty"?"Не потрібне":"Введіть значення"}"></label>
+   <button class="danger" type="button" data-remove="${i}" aria-label="Видалити умову">×</button>
+  </div>`;
+ }).join("")||'<p class="muted">Додайте хоча б одну умову.</p>';
+ $("queryCount").textContent=conditions.length;
+}
+const ops=[{v:"eq",t:"дорівнює"},{v:"neq",t:"не дорівнює"},{v:"contains",t:"містить"},{v:"starts",t:"починається з"},{v:"gt",t:"більше"},{v:"gte",t:"не менше"},{v:"lt",t:"менше"},{v:"lte",t:"не більше"},{v:"empty",t:"порожнє значення"},{v:"notEmpty",t:"не порожнє"}];
+$("conditions").addEventListener("change",e=>{
+ const i=e.target.dataset.i,k=e.target.dataset.k;
+ if(i===undefined||!k)return;
+ const condition=conditions[+i];
+ if(k==="field"){
+  condition.field=e.target.value;condition.value="";condition.op="eq";renderConditions();
+ }else if(k==="op"){
+  condition.op=e.target.value;renderConditions();
+ }else condition[k]=e.target.value;
+});
+$("conditions").addEventListener("input",e=>{
+ const i=e.target.dataset.i,k=e.target.dataset.k;
+ if(i!==undefined&&k)conditions[+i][k]=e.target.value;
+});
+$("conditions").addEventListener("click",e=>{
+ const remove=e.target.closest("[data-remove]");
+ if(remove){conditions.splice(+remove.dataset.remove,1);renderConditions();}
+});
+$("addCondition").onclick=()=>{
+ const t=db[$("queryTable").value];
+ if(!t)return;
+ const field=t.fields.find(f=>f.name!=="ID")||t.fields[0];
+ conditions.push({field:field.name,op:"eq",value:""});renderConditions();
+};
+$("clearQuery").onclick=()=>{conditions=[];renderConditions();$("queryResults").innerHTML="";$("queryMessage").textContent="Умови та результати запиту очищено.";};
+function compare(actual,c,type){
+ const empty=actual===null||actual===undefined||String(actual).trim()==="";
+ if(c.op==="empty")return empty;
+ if(c.op==="notEmpty")return !empty;
+ if(empty)return false;
+ const a=String(actual),v=String(c.value??"");
+ if(type==="number"){
+  const x=Number(actual),y=Number(v);
+  if(v.trim()===""||!Number.isFinite(x)||!Number.isFinite(y))return false;
+  return ({eq:x===y,neq:x!==y,gt:x>y,gte:x>=y,lt:x<y,lte:x<=y})[c.op]??false;
+ }
+ if(type==="date"){
+  const x=Date.parse(a),y=Date.parse(v);
+  if(!Number.isFinite(x)||!Number.isFinite(y))return false;
+  return ({eq:x===y,neq:x!==y,gt:x>y,gte:x>=y,lt:x<y,lte:x<=y})[c.op]??false;
+ }
+ const lowerA=a.toLocaleLowerCase("uk-UA"),lowerV=v.toLocaleLowerCase("uk-UA");
+ return ({eq:lowerA===lowerV,neq:lowerA!==lowerV,contains:lowerA.includes(lowerV),starts:lowerA.startsWith(lowerV),ends:lowerA.endsWith(lowerV)})[c.op]??false;
+}
+$("runQuery").onclick=()=>{
+ const t=db[$("queryTable").value];
+ if(!t){$("queryMessage").textContent="Спочатку оберіть таблицю.";return;}
+ if(!conditions.length){$("queryMessage").textContent="Додайте хоча б одну умову перед виконанням запиту.";$("queryResults").innerHTML="";return;}
+ for(let i=0;i<conditions.length;i++){
+  const c=conditions[i],field=t.fields.find(f=>f.name===c.field);
+  if(!field){$("queryMessage").textContent=`Умова ${i+1}: вибране поле відсутнє в таблиці.`;return;}
+  if(c.op!=="empty"&&c.op!=="notEmpty"&&String(c.value??"").trim()===""){$("queryMessage").textContent=`Умова ${i+1}: введіть значення або виберіть перевірку на порожнє поле.`;return;}
+  if(field.type==="number"&&c.op!=="empty"&&c.op!=="notEmpty"&&!Number.isFinite(Number(c.value))){$("queryMessage").textContent=`Умова ${i+1}: введіть коректне число.`;return;}
+  if(field.type==="date"&&c.op!=="empty"&&c.op!=="notEmpty"&&!Number.isFinite(Date.parse(c.value))){$("queryMessage").textContent=`Умова ${i+1}: виберіть коректну дату.`;return;}
+ }
+ const mode=$("joinMode").value;
+ lastResult=t.rows.filter(row=>mode==="AND"
+  ?conditions.every(c=>compare(row[c.field],c,t.fields.find(f=>f.name===c.field).type))
+  :conditions.some(c=>compare(row[c.field],c,t.fields.find(f=>f.name===c.field).type)));
+ $("queryResults").innerHTML=thead(t.fields)+tbody(t.fields,lastResult);
+ $("queryMessage").textContent=lastResult.length
+  ?`Запит виконано успішно. Знайдено записів: ${lastResult.length} із ${t.rows.length}. Умов: ${conditions.length} (${mode}).`
+  :`Запит виконано, але відповідних записів не знайдено. Перевірте значення або змініть об'єднання умов (${mode}).`;
+};
+$("addRecord").onclick=()=>{let name=$("editTable").value,t=db[name],row={};row.ID=Math.max(0,...t.rows.map(r=>Number(r.ID)||0))+1;let valid=true;t.fields.filter(f=>f.name!=="ID").forEach(f=>{let el=document.querySelector(`[data-field="${CSS.escape(f.name)}"]`),v=el.value;if(v==="")row[f.name]="";else if(f.type==="number"){if(!Number.isFinite(Number(v)))valid=false;row[f.name]=Number(v);}else row[f.name]=v;});if(!valid){alert("Перевірте числові поля.");return;}t.rows.push(row);renderEdit();render();};
+$("clearForm").onclick=()=>renderEdit();$("resetDemo").onclick=()=>{db=structuredClone(demo);conditions=[];render();renderConditions();};
+$("newTable").onclick=()=>{let name=prompt("Назва нової таблиці:");if(!name||db[name])return;let fields=[{name:"ID",type:"number"}];let f=prompt("Назви інших полів через кому (наприклад: Назва,Кількість):");(f||"").split(",").map(x=>x.trim()).filter(Boolean).forEach(x=>fields.push({name:x,type:"text"}));db[name]={fields,rows:[]};render();};
+function download(blob,name){let a=document.createElement("a"),url=URL.createObjectURL(blob);a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
+$("exportJson").onclick=()=>download(new Blob([JSON.stringify({format:"AccessLabJSON",version:1,tables:db},null,2)],{type:"application/json"}),"accesslab-backup.json");
+function csvFor(t){let fields=t.fields;return "\uFEFF"+[fields.map(f=>csvCell(f.name)).join(";"),...t.rows.map(r=>fields.map(f=>csvCell(r[f.name])).join(";"))].join("\r\n");}
+function csvCell(v){let s=String(v??"");return '"'+s.replace(/"/g,'""')+'"';}
+$("exportCsv").onclick=()=>{let n=$("tableSelect").value;download(new Blob([csvFor(db[n])],{type:"text/csv;charset=utf-8"}),n+".csv");};
+$("exportAllCsv").onclick=()=>{Object.entries(db).forEach(([n,t],i)=>setTimeout(()=>download(new Blob([csvFor(t)],{type:"text/csv;charset=utf-8"}),n.replace(/[^\wа-яіїє-]/gi,"_")+".csv"),i*350));};
+$("jsonInput").onchange=async e=>{let f=e.target.files[0];if(!f)return;try{let data=JSON.parse(await f.text());let tables=data.tables||data;if(!tables||typeof tables!=="object"||Array.isArray(tables))throw Error("Невірна структура JSON");for(let [n,t] of Object.entries(tables)){if(!Array.isArray(t.fields)||!Array.isArray(t.rows))throw Error("Таблиця "+n+" має неправильний формат");}db=tables;conditions=[];render();renderConditions();$("fileMessage").textContent="JSON успішно імпортовано.";}catch(err){$("fileMessage").textContent="Помилка імпорту: "+err.message;}e.target.value="";};
+function parseCSV(text){let rows=[],row=[],cell="",q=false;for(let i=0;i<text.length;i++){let c=text[i],n=text[i+1];if(c==='"'&&q&&n==='"'){cell+='"';i++;}else if(c==='"')q=!q;else if((c===";"||c===",")&&!q){row.push(cell);cell="";}else if((c==="\n"||c==="\r")&&!q){if(c==="\r"&&n==="\n")i++;row.push(cell);if(row.some(x=>x!==""))rows.push(row);row=[];cell="";}else cell+=c;}row.push(cell);if(row.some(x=>x!==""))rows.push(row);return rows;}
+$("csvInput").onchange=async e=>{let f=e.target.files[0];if(!f)return;try{let text=await f.text(),rows=parseCSV(text.replace(/^\uFEFF/,""));if(rows.length<1)throw Error("CSV порожній");let headers=rows[0].map(x=>x.trim()),name=$("importTable").value,t=db[name],known=t.fields.map(f=>f.name);let mapped=headers.map(h=>known.find(k=>k.toLocaleLowerCase("uk")===h.toLocaleLowerCase("uk"))||h);let imported=rows.slice(1).map(r=>Object.fromEntries(mapped.map((h,i)=>{let field=t.fields.find(f=>f.name===h),v=r[i]??"";return [h,field?.type==="number"&&v!==""?Number(v):v];})));if($("replaceRows").checked)t.rows=imported;else t.rows.push(...imported);$("fileMessage").textContent=`Імпортовано записів: ${imported.length}.`;render();}catch(err){$("fileMessage").textContent="Помилка CSV: "+err.message;}e.target.value="";};
+render();renderConditions();
+</script></body></html>
